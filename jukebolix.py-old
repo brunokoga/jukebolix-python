@@ -1,0 +1,72 @@
+import nxppy
+import time
+import sh
+import vlc
+
+mifare = nxppy.Mifare()
+
+# Print card UIDs as they are detected
+
+card000 = "04E73C6A643480"
+card001 = "040CF7E2BA5D81"
+card002 = "0442C0E2BA5D80"
+card003 = "04ABA6E2BA5D80"
+card004 = "04EE3EE2BA5D80"
+card005 = "04133EE2BA5D81"
+
+def nameForCard(cardId):
+    return {
+            card000: "Stop",
+            card001: "1",
+            card002: "2",
+            card003: "3",
+            card004: "4",
+            card005: "5"
+            }.get(cardId, "")
+
+def stopAllPlayers():
+    global hasPlayer
+    global player
+    hasPlayer = False
+    player.stop()
+    player.release()
+
+def plim():
+    plimPlayer.stop()
+    plimPlayer.play()
+
+def play(filename):
+    global hasPlayer
+    global player
+    hasPlayer = True
+    player = vlc.MediaPlayer(filename)
+    player.play()
+
+player = vlc.MediaPlayer()
+hasPlayer = False
+plimPlayer = vlc.MediaPlayer("pop.mp3")
+
+while True:
+    try:
+        uid = mifare.select()
+        name = nameForCard(uid)
+        print(uid)
+
+        print(name)
+        plim()
+        if hasPlayer:
+            stopAllPlayers()
+        if name == "1":
+            play("stir.mp3")
+        if name == "2":
+            play("sitio.mp3")
+        if name == "3":
+            play("gigante.mp3")
+        if name == "4":
+            play("lenine.mp3")
+        if name == "5":
+            play("coloridos.mp3")
+    except nxppy.SelectError:
+        # SelectError is raised if no card is in the field.
+        pass
+    time.sleep(1)

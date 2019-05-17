@@ -1,8 +1,6 @@
 import nxppy
 import time
-import sh
-import vlc
-
+import subprocess
 mifare = nxppy.Mifare()
 
 # Print card UIDs as they are detected
@@ -212,38 +210,29 @@ def nameForCard(cardId):
             }.get(cardId, "stop")
 
 def stopAllPlayers():
-    global hasPlayer
     global player
-    hasPlayer = False
-    player.stop()
-    player.release()
+    try:
+        player.stdin.write('q')
+    except:
+        pass
 
 def plim():
-    plimPlayer.stop()
-    plimPlayer.play()
+    subprocess.call(['omxplayer', 'pop.mp3'])
 
 def play(filename):
-    global hasPlayer
     global player
-    hasPlayer = True
-    player = vlc.MediaPlayer(filename)
-    player.play()
-
-player = vlc.MediaPlayer()
-hasPlayer = False
-plimPlayer = vlc.MediaPlayer("pop.mp3")
+    player = subprocess.Popen(['omxplayer', filename], stdin=subprocess.PIPE)
 
 while True:
     try:
         uid = mifare.select()
         name = nameForCard(uid)
         plim()
-        if hasPlayer:
-            stopAllPlayers()
+        stopAllPlayers()
         if name != "stop":
             filename = "songs/" + name + ".mp3"
             play(filename)
-        time.sleep(3)
+        time.sleep(2)
     except nxppy.SelectError:
         # SelectError is raised if no card is in the field.
         pass
